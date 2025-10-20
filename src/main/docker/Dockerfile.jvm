@@ -1,0 +1,17 @@
+####
+# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
+###
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.21
+ENV LANGUAGE='en_US:en'
+
+# Prepare image layers
+COPY --chown=185 target/lib/ /deployments/lib/
+COPY --chown=185 target/projexion-api-1.0.0-runner.jar /deployments/
+
+EXPOSE 8080 8081 5005
+USER 185
+ENV AB_JOLOKIA_OFF=""
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/projexion-api-1.0.0-runner.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
