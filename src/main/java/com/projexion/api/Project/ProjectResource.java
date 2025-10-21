@@ -20,7 +20,7 @@ import org.jboss.logging.Logger;
 import java.util.Map;
 
 
-@Path("project")
+@Path("projects")
 @Produces("application/json")
 @Consumes("application/json")
 public class ProjectResource {

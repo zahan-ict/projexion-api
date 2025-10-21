@@ -84,9 +84,9 @@ fax                         TEXT                NULL,
 email1                      TEXT                NULL,
 email2                      TEXT                NULL,
 company_is                  TEXT                NULL,
-created_at                  TIMESTAMPTZ         NULL DEFAULT NOW(),
-updated_at                  TIMESTAMPTZ         NULL DEFAULT NOW(),
-deleted_at                  TIMESTAMPTZ         NULL DEFAULT NOW()
+created_at                  TIMESTAMPTZ         NULL,
+updated_at                  TIMESTAMPTZ         NULL,
+deleted_at                  TIMESTAMPTZ         NULL
 );
 CREATE INDEX index_contacts_id ON contacts (id);
 
@@ -112,11 +112,11 @@ company_fax                 varchar(255)  DEFAULT NULL,
 company_durchwahl           varchar(255)  DEFAULT NULL,
 company_instagram           varchar(255)  DEFAULT NULL,
 company_twitter             varchar(255)  DEFAULT NULL,
-firmenadresscat             JSONB         NULL DEFAULT '{}'::jsonb,
+firmenadresscat             TEXT          DEFAULT NULL,
 company_notes               TEXT          NULL,
-created_at                  TIMESTAMPTZ   NULL DEFAULT NOW(),
-updated_at                  TIMESTAMPTZ   NULL DEFAULT NOW(),
-deleted_at                  TIMESTAMPTZ   NULL DEFAULT NOW()
+created_at                  TIMESTAMPTZ   NULL,
+updated_at                  TIMESTAMPTZ   NULL,
+deleted_at                  TIMESTAMPTZ   NULL
 );
 CREATE INDEX index_companies_id ON companies (id);
 

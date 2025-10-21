@@ -89,7 +89,7 @@ public class CompanyEntity extends PanacheEntityBase {
     @Column(name = "company_twitter", length = 255)
     private String companyTwitter;
 
-    @Column(name = "firmenadresscat", columnDefinition = "JSONB")
+    @Column(name = "firmenadresscat", columnDefinition = "TEXT")
     private String firmenAdressCat;
 
     @Column(name = "company_notes", columnDefinition = "TEXT")

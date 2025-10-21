@@ -7,7 +7,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.POST;;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
@@ -20,11 +20,11 @@ import org.jboss.logging.Logger;
 import java.util.Map;
 
 
-@Path("company")
+@Path("companies")
 @Produces("application/json")
 @Consumes("application/json")
 public class CompanyResource {
-    private static final Logger LOGGER = Logger.getLogger(com.projexion.api.Project.ProjectResource.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CompanyResource.class.getName());
     @Inject
     CompanyService service;
 

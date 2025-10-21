@@ -20,11 +20,11 @@ import org.jboss.logging.Logger;
 import java.util.Map;
 
 
-@Path("contact")
+@Path("contacts")
 @Produces("application/json")
 @Consumes("application/json")
 public class ContactResource {
-    private static final Logger LOGGER = Logger.getLogger(com.projexion.api.Project.ProjectResource.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ContactResource.class.getName());
     @Inject
     ContactService service;
 
