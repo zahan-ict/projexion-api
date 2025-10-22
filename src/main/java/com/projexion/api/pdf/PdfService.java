@@ -1,16 +1,19 @@
 package com.projexion.api.pdf;
 
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
+import org.apache.fop.apps.FOPException;
 import org.jboss.logging.Logger;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayOutputStream;
@@ -20,8 +23,13 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @ApplicationScoped
@@ -33,33 +41,40 @@ public class PdfService {
     /**
      * Builds a PDF from frontend JSON (mapped to PdfEntity)
      */
-    public byte[] generatePdf(PdfEntity dto) {
-        // Convert DTO to a simple map for placeholder replacement
-          Map<String, Object> data = dtoToMap(createSampleInvoice());
-
-        return buildPdf(data);
+    public Uni<byte[]> generatePdf(PdfEntity dto, String view) {
+        Map<String, Object> data = dtoToMap(dto);
+        // Map<String, Object> data = dtoToMap(createSampleInvoice());
+        return buildPdf(data, view);
     }
 
     /**
      * Builds a PDF using a named FO template and data map from JSON
      */
-    public byte[] buildPdf(Map<String, Object> data) {
-        try {
+    public Uni<byte[]> buildPdf(Map<String, Object> data, String view) {
+        return Uni.createFrom().item(() -> {
             String foTemplate = findTemplateByName();
             String filledFo = fillTemplate(foTemplate, data);
-            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
                 FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-                Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out);
-                Source src = new StreamSource(new StringReader(filledFo));
+                String mimeType = view.equalsIgnoreCase("png") ? MimeConstants.MIME_PNG : MimeConstants.MIME_PDF;
+                Fop fop = fopFactory.newFop(mimeType, foUserAgent, out);
+
                 Transformer transformer = transformerFactory.newTransformer();
+                Source src = new StreamSource(new StringReader(filledFo));
                 Result res = new SAXResult(fop.getDefaultHandler());
+
                 transformer.transform(src, res);
                 return out.toByteArray();
+            } catch (FOPException | TransformerException e ) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Error generating PDF", e);
-        }
+        }).onFailure().recoverWithItem(() -> {
+            throw new RuntimeException("Error generating output");
+        });
     }
+
 
     /**
      * Replace placeholders like ${name} with values from map
@@ -78,15 +93,23 @@ public class PdfService {
      */
     private Map<String, Object> dtoToMap(PdfEntity dto) {
         Map<String, Object> map = new HashMap<>();
-        map.put("clientName", dto.getClientName());
+        map.put("pdfCreator", dto.getPdfCreator());
+        map.put("clientNamePrefix", dto.getClientNamePrefix());
+        map.put("clientFirstname", dto.getClientFirstname());
+        map.put("clientLastName", dto.getClientLastname());
         map.put("clientAddress", dto.getClientAddress());
+        map.put("clientPostCode", dto.getClientPostCode());
+        map.put("clientCountry", dto.getClientCountry());
         map.put("clientCity", dto.getClientCity());
-        map.put("fiscalCode", dto.getFiscalCode());
+
         map.put("vatNumber", dto.getVatNumber());
-        map.put("city", dto.getCity());
-        map.put("date", dto.getDate());
+        map.put("invoiceIssueLocation", "Zürich");
+     //  map.put("invoiceIssueLocation", dto.getInvoiceIssueLocation());
+        map.put("invoiceIssueDate", formatedDate());
+    //  map.put("invoiceIssueDate", dto.getInvoiceIssueDate());
         map.put("invoiceNumber", dto.getInvoiceNumber());
         map.put("invoiceTitle", dto.getInvoiceTitle());
+        map.put("comment", dto.getComment());
         map.put("bankName", dto.getBankName());
         map.put("iban", dto.getIban());
         map.put("swift", dto.getSwift());
@@ -108,18 +131,30 @@ public class PdfService {
         return map;
     }
 
+   public String formatedDate() {
+        Instant now = Instant.now();
+        ZonedDateTime zonedDateTime = now.atZone(ZoneId.of("Europe/Berlin"));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale.GERMAN);
+        return zonedDateTime.format(formatter);   // e.g., "22. Oktober 2025"
+
+
+    }
+
+
     /**
      * Example static data for testing without frontend
      */
     public PdfEntity createSampleInvoice() {
         PdfEntity invoice = new PdfEntity();
-        invoice.setClientName("Cineteatro Victoria - Parrocchia San Lorenzo");
+        invoice.setClientFirstname("Cineteatro Victoria");
+        invoice.setClientLastname("Parrocchia San Lorenzo");
         invoice.setClientAddress("Via Picchi 2");
-        invoice.setClientCity("23022 Chiavenna");
-        invoice.setFiscalCode("81000030148");
+        invoice.setClientPostCode("81000030148");
+        invoice.setClientCity("Zürich");
+        invoice.setClientCountry("CH");
         invoice.setVatNumber("IT 00477190144");
-        invoice.setCity("Zürich");
-        invoice.setDate("30. Januar 2025");
+        invoice.setInvoiceIssueDate("30. Januar 2025");
         invoice.setInvoiceNumber("6737");
         invoice.setInvoiceTitle("Screening Fee of Giacometti by Susanna Fanzun");
         invoice.setBankName("Swiss PostFinance Bern");
@@ -137,55 +172,14 @@ public class PdfService {
      */
     public String findTemplateByName() {
         File file = new File("template/invoice.xsl");
-
         if (!file.exists()) {
             throw new RuntimeException("Template file not found: " + file.getAbsolutePath());
         }
-
         try {
             return new String(Files.readAllBytes(Paths.get(file.getPath())));
         } catch (IOException e) {
             throw new RuntimeException("Error reading template file", e);
         }
-
-//            """
-//            <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
-//              <fo:layout-master-set>
-//                <fo:simple-page-master master-name="A4" page-height="29.7cm" page-width="21cm" margin="2cm">
-//                  <fo:region-body/>
-//                </fo:simple-page-master>
-//              </fo:layout-master-set>
-//              <fo:page-sequence master-reference="A4">
-//
-//                <fo:flow flow-name="xsl-region-body" font-family="Helvetica">
-//                  <fo:block font-size="12pt" font-weight="bold">${clientName}</fo:block>
-//                  <fo:block>${clientAddress}</fo:block>
-//                  <fo:block>${clientCity}</fo:block>
-//                  <fo:block space-after="8pt">Fiscal Code: ${fiscalCode} | VAT: ${vatNumber}</fo:block>
-//                  <fo:block text-align="right">${city}, ${date}</fo:block>
-//                  <fo:block font-size="14pt" font-weight="bold" space-after="6pt">
-//                    Rechnung Nr. ${invoiceNumber}
-//                  </fo:block>
-//                  <fo:block font-size="10pt" space-after="10pt">${invoiceTitle}</fo:block>
-//                  <fo:block space-after="10pt">${priceListText}</fo:block>
-//                  <fo:block font-weight="bold" space-before="10pt">
-//                    Total EUR: ${totalEur}
-//                  </fo:block>
-//                  <fo:block font-weight="bold" space-before="4pt">
-//                    Total CHF: ${totalChf}
-//                  </fo:block>
-//                  <fo:block font-size="10pt" space-before="10pt">
-//                    Bank: ${bankName} | IBAN: ${iban} | SWIFT: ${swift}
-//                  </fo:block>
-//                </fo:flow>
-//              </fo:page-sequence>
-//            </fo:root>
-//        """;
-
-
-
     }
-
-
 }
 

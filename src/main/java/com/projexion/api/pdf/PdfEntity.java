@@ -13,16 +13,22 @@ import java.util.List;
 @AllArgsConstructor
 public class PdfEntity {
 
-    private String clientName;
+    private String pdfCreator;
+    private String clientNamePrefix;
+    private String clientFirstname;
+    private String clientLastname;
+
     private String clientAddress;
+    private String clientPostCode;
     private String clientCity;
-    private String fiscalCode;
+    private String clientCountry;
     private String vatNumber;
 
-    private String city;
-    private String date;
+    private String invoiceIssueLocation;
+    private String invoiceIssueDate;
     private String invoiceNumber;
     private String invoiceTitle;
+    private String comment;
 
     private String bankName;
     private String iban;
