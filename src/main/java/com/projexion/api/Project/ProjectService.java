@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
@@ -39,6 +40,19 @@ public class ProjectService {
                                     return response;
                                 })
                 );
+    }
+
+
+    public Uni<Map<String, Long>> getProjectName() {
+        Map<String, Long> projectTitle = new HashMap<>();
+        return ProjectEntity.<ProjectEntity>listAll()
+                .onItem().transformToUni(projectEntities -> {
+                    projectEntities.stream()
+                            .peek(entity -> projectTitle.put(entity.getTitle(), entity.getId()))
+                            .map(ProjectEntity::getTitle)
+                            .collect(Collectors.toList());
+                    return Uni.createFrom().item(projectTitle);
+                });
     }
 
     /**
@@ -139,5 +153,4 @@ public class ProjectService {
         return Panache.withTransaction(() -> ProjectEntity.deleteById(id))
                 .map(deleted -> deleted ? Response.ok().status(NO_CONTENT).build() : Response.ok().status(NOT_FOUND).build());
     }
-
 }

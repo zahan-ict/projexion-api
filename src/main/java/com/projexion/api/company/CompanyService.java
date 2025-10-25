@@ -2,7 +2,6 @@
  * Copyright (c) 2025 ProjeXion. All rights reserved.
  */
 package com.projexion.api.company;
-
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
@@ -13,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
@@ -96,10 +96,8 @@ public class CompanyService {
                             existing.setCompanyTwitter(updatedCompany.getCompanyTwitter());
                             existing.setFirmenAdressCat(updatedCompany.getFirmenAdressCat());
                             existing.setCompanyNotes(updatedCompany.getCompanyNotes());
-
                             // Update audit fields
                             existing.setUpdatedAt(Instant.now());
-
                             // Persist and return 200 OK
                             return existing.persist()
                                     .replaceWith(Response.ok(existing).build());
@@ -107,6 +105,18 @@ public class CompanyService {
                         // If not found, return 404
                         .onItem().ifNull().continueWith(Response.status(NOT_FOUND).build())
         );
+    }
+
+    public Uni<Map<String, Long>> getCompanyName() {
+        Map<String, Long> companyName = new HashMap<>();
+        return CompanyEntity.<CompanyEntity>listAll()
+                .onItem().transformToUni(companyEntity -> {
+                    companyEntity.stream()
+                            .peek(entity -> companyName.put(entity.getCompanyName(), entity.getId()))
+                            .map(CompanyEntity::getCompanyName)
+                            .collect(Collectors.toList());
+                    return Uni.createFrom().item(companyName);
+                });
     }
 
     /**
@@ -119,5 +129,4 @@ public class CompanyService {
         return Panache.withTransaction(() -> CompanyEntity.deleteById(id))
                 .map(deleted -> deleted ? Response.ok().status(NO_CONTENT).build() : Response.ok().status(NOT_FOUND).build());
     }
-
 }

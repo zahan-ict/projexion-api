@@ -2,8 +2,6 @@
  * Copyright (c) 2025 ProjeXion. All rights reserved.
  */
 package com.projexion.api.contact;
-
-
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
@@ -18,8 +16,14 @@ import java.util.Map;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jboss.logging.Logger;
+
 @ApplicationScoped
 public class ContactService {
+    private final ObjectMapper mapper = new ObjectMapper();
+    private static final Logger LOGGER = Logger.getLogger(ContactService.class);
+
     /**
      * Server side pagination on element list
      *
@@ -56,13 +60,54 @@ public class ContactService {
     /**
      * Create Contact
      *
-     * @param contact
+     * @param entity
      * @return
      */
     @WithTransaction
-    public Uni<ContactEntity> createContact(ContactEntity contact) {
-        return Panache.withTransaction(contact::persist).replaceWith(contact);
+    public Uni<ContactEntity> createContact(ContactEntity entity) {
+        ContactEntity contact = new ContactEntity();
+        contact.setFirstName(entity.getFirstName());
+        contact.setName(entity.getName());
+        contact.setAhvNumber(entity.getAhvNumber());
+        contact.setNationality(entity.getNationality());
+        contact.setWithPrefix(entity.getWithPrefix());
+        contact.setTitels(entity.getTitels());
+        contact.setPrefix(entity.getPrefix());
+        contact.setPrivateAddressStreet(entity.getPrivateAddressStreet());
+        contact.setPrivateAddressPostcode(entity.getPrivateAddressPostcode());
+        contact.setPrivateAddressCity(entity.getPrivateAddressCity());
+        contact.setPrivateAddressCountry(entity.getPrivateAddressCountry());
+        contact.setCompanyPosition(entity.getCompanyPosition());
+        contact.setPostcheckAccount(entity.getPostcheckAccount());
+        contact.setBank(entity.getBank());
+        contact.setContactNotes(entity.getContactNotes());
+        contact.setPhone(entity.getPhone());
+        contact.setProfession(entity.getProfession());
+        contact.setBirthDate(entity.getBirthDate());
+        contact.setBankAccount(entity.getBankAccount());
+        contact.setPhoneCompany(entity.getPhoneCompany());
+        contact.setPhoneCentral(entity.getPhoneCentral());
+        contact.setFax(entity.getFax());
+        contact.setEmail1(entity.getEmail1());
+        contact.setEmail2(entity.getEmail2());
+        contact.setCompanyIs(entity.getCompanyIs());
+        try {
+            if (entity.getProjects() != null) {
+                contact.setProjectIs(mapper.writeValueAsString(entity.getProjects()));
+            } else {
+                contact.setProjectIs(null);
+            }
+            if (entity.getCompanies() != null) {
+                contact.setCompanyIs(mapper.writeValueAsString(entity.getCompanies()));
+            } else {
+                contact.setProjectIs(null);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error converting project list to JSON", e);
+        }
+        return contact.persist().replaceWith(contact);
     }
+
 
     /**
      * Update Contact
@@ -101,13 +146,26 @@ public class ContactService {
                             existing.setEmail1(updatedContact.getEmail1());
                             existing.setEmail2(updatedContact.getEmail2());
                             existing.setCompanyIs(updatedContact.getCompanyIs());
-
                             // Set audit fields
                             existing.setUpdatedAt(Instant.now());
 
+                            try {
+                                if (updatedContact.getProjects() != null) {
+                                    existing.setProjectIs(mapper.writeValueAsString(updatedContact.getProjects()));
+                                } else {
+                                    existing.setProjectIs(null);
+                                }
+                                if (updatedContact.getCompanies() != null) {
+                                    existing.setCompanyIs(mapper.writeValueAsString(updatedContact.getCompanies()));
+                                } else {
+                                    existing.setProjectIs(null);
+                                }
+                            } catch (Exception e) {
+                                throw new RuntimeException("Error converting project list to JSON", e);
+                            }
+
                             // Persist and return response
-                            return existing.persist()
-                                    .replaceWith(Response.ok(existing).build());
+                            return existing.persist().replaceWith(Response.ok(existing).build());
                         })
                         .onItem().ifNull().continueWith(Response.status(NOT_FOUND).build())
         );

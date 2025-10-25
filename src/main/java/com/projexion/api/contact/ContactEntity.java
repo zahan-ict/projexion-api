@@ -1,18 +1,25 @@
+/*
+ * Copyright (c) 2025 ProjeXion. All rights reserved.
+ */
 package com.projexion.api.contact;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Table;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.Instant;
+import java.util.List;
+
 
 @Entity
 @Table(name = "contacts")
@@ -23,13 +30,7 @@ import java.time.Instant;
 public class ContactEntity extends PanacheEntityBase {
 
     @Id
-    @SequenceGenerator(
-            name = "ContactsSeq",
-            sequenceName = "contacts_id_seq",
-            allocationSize = 1,
-            initialValue = 1
-    )
-    @GeneratedValue(generator = "ContactsSeq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "ahv_number", columnDefinition = "TEXT")
@@ -107,12 +108,46 @@ public class ContactEntity extends PanacheEntityBase {
     @Column(name = "company_is", columnDefinition = "TEXT")
     private String companyIs;
 
-    @Column(name = "created_at")
+    @Transient
+    private List<CompanyRef> companies;
+
+    @Column(name = "project_is", columnDefinition = "TEXT", nullable = true)
+    private String projectIs;
+
+    @Transient
+    private List<ProjectRef> projects;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private Instant createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private Instant  updatedAt;
 
-    @Column(name = "deleted_at")
+    @Column(name = "deleted_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private Instant  deletedAt;
+
+
+    // Automatically set timestamps before persisting or updating
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProjectRef {
+        private Long id;
+        private String projectName;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CompanyRef {
+        private Long id;
+        private String companyName;
+    }
+
 }

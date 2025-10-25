@@ -41,6 +41,16 @@ public class CompanyResource {
     }
 
     /**
+     * Find company name and id
+     * @return
+     */
+    @GET
+    @Path("/company-name")
+    public Uni<Map<String, Long>> getCompanyName() {
+        return service.getCompanyName();
+    }
+
+    /**
      * Add new company
      * @param company
      * @return

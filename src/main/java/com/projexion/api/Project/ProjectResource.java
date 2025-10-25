@@ -41,6 +41,18 @@ public class ProjectResource {
     }
 
     /**
+     * Find project name and id
+     * @return
+     */
+    @GET
+    @Path("/project-name")
+    public Uni<Map<String, Long>> getProjectName() {
+        return service.getProjectName();
+    }
+
+
+
+    /**
      * Add new project
      * @param project
      * @return

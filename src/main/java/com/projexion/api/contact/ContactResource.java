@@ -46,11 +46,11 @@ public class ContactResource {
      * @return
      */
     @POST
-    public Uni<Response> createEntry(ContactEntity contact) {
+    public Uni<Response> createEntry(ContactEntity contact)  {
         if (contact == null || contact.getId() != null) {
             throw new WebApplicationException("Id was invalidly set on request.", 422);
         }
-        LOGGER.info("Creating a new  contact: " + contact.getAhvNumber());
+        LOGGER.info("Creating a new  contact: " + contact.getId());
         return service.createContact(contact)
                 .map(createdContact -> Response.ok(createdContact).status(201).build()); // Return 201 Created
     }
@@ -64,10 +64,15 @@ public class ContactResource {
     @PUT
     @Path("{key}")
     public Uni<Response> updateEntry(@PathParam("key") Long key, ContactEntity contact) {
-        if (contact == null || contact.getAhvNumber() == null) {
-            throw new WebApplicationException("Contact data is not set.", 422);
+        try {
+        } catch (Exception e) {
+            LOGGER.warn("Failed to log contact JSON: " + e.getMessage());
         }
-        LOGGER.info("A Contact is updated with Avh Number: " + contact.getAhvNumber());
+        // Optional sanity check
+        if (contact == null) {
+            throw new WebApplicationException("Contact data is missing", 400);
+        }
+        LOGGER.info("Updating contact with ID: " + key + " (payload ID: " + contact.getId() + ")");
         return service.updateContact(key, contact);
     }
 

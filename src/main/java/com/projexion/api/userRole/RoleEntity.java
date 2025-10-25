@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Role. All rights reserved.
+ * Copyright (c) 2025 ProjXion. All rights reserved.
  */
 package com.projexion.api.userRole;
 

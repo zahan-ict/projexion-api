@@ -2,7 +2,7 @@
 
 -- Project
 CREATE TABLE IF NOT EXISTS public.projects (
-id                          SERIAL              NOT NULL PRIMARY KEY,
+id                          BIGINT GENERATED   BY DEFAULT AS IDENTITY PRIMARY KEY,
 title                       varchar(255)        NULL,
 production_year             varchar(255)        NULL,
 country                     varchar(255)        DEFAULT 'de',
@@ -54,11 +54,13 @@ created_at                  TIMESTAMPTZ         NULL DEFAULT NOW(),
 updated_at                  TIMESTAMPTZ         NULL DEFAULT NOW(),
 deleted_at                  TIMESTAMPTZ         NULL DEFAULT NOW()
 );
-CREATE INDEX index_projects_id ON projects (id);
+CREATE INDEX index_projects1_id ON projects (id);
+-- Run this after every import of project
+-- SELECT setval(pg_get_serial_sequence('projects', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM contacts),false)
 
 -- Contact
 CREATE TABLE IF NOT EXISTS public.contacts (
-id                          SERIAL              NOT NULL PRIMARY KEY,
+id                          BIGINT GENERATED   BY DEFAULT AS IDENTITY PRIMARY KEY,
 ahv_number                  TEXT                NULL,
 nationality                 TEXT                NULL,
 withprefix                  TEXT                NULL,
@@ -84,15 +86,18 @@ fax                         TEXT                NULL,
 email1                      TEXT                NULL,
 email2                      TEXT                NULL,
 company_is                  TEXT                NULL,
+project_is                  TEXT                NULL,
 created_at                  TIMESTAMPTZ         NULL,
 updated_at                  TIMESTAMPTZ         NULL,
 deleted_at                  TIMESTAMPTZ         NULL
 );
 CREATE INDEX index_contacts_id ON contacts (id);
+-- Run this after import of contact
+-- SELECT setval(pg_get_serial_sequence('contacts', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM contacts),false);
 
 --Company
 CREATE TABLE IF NOT EXISTS public.companies (
-id                          SERIAL        NOT NULL PRIMARY KEY,
+id                          BIGINT GENERATED   BY DEFAULT AS IDENTITY PRIMARY KEY,
 company_name                TEXT          NULL,
 company_mail                varchar(255)  DEFAULT NULL,
 company_phone               varchar(255)  DEFAULT NULL,
@@ -119,7 +124,8 @@ updated_at                  TIMESTAMPTZ   NULL,
 deleted_at                  TIMESTAMPTZ   NULL
 );
 CREATE INDEX index_companies_id ON companies (id);
-
+-- Run this after import of companies
+-- SELECT setval(pg_get_serial_sequence('companies', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM contacts),false);
 
 -- User
 CREATE TABLE IF NOT EXISTS public.users

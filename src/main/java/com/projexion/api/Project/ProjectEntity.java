@@ -6,7 +6,7 @@ package com.projexion.api.Project;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Table;
@@ -26,13 +26,7 @@ import java.time.Instant;
 public class ProjectEntity extends PanacheEntityBase {
 
     @Id
-    @SequenceGenerator(
-            name = "ProjectsSeq",
-            sequenceName = "projects_id_seq",
-            allocationSize = 1,
-            initialValue = 1
-    )
-    @GeneratedValue(generator = "ProjectsSeq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "title")

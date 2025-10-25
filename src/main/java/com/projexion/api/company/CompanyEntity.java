@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2025 ProjeXion. All rights reserved.
+ */
 package com.projexion.api.company;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Table;
@@ -23,13 +26,7 @@ import java.time.Instant;
 public class CompanyEntity extends PanacheEntityBase {
 
     @Id
-    @SequenceGenerator(
-            name = "CompaniesSeq",
-            sequenceName = "companies_id_seq",
-            allocationSize = 1,
-            initialValue = 1
-    )
-    @GeneratedValue(generator = "CompaniesSeq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "company_name", columnDefinition = "TEXT")
