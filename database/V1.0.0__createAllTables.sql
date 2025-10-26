@@ -54,9 +54,9 @@ created_at                  TIMESTAMPTZ         NULL DEFAULT NOW(),
 updated_at                  TIMESTAMPTZ         NULL DEFAULT NOW(),
 deleted_at                  TIMESTAMPTZ         NULL DEFAULT NOW()
 );
-CREATE INDEX index_projects1_id ON projects (id);
+CREATE INDEX index_projects_id ON projects (id);
 -- Run this after every import of project
--- SELECT setval(pg_get_serial_sequence('projects', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM contacts),false)
+-- SELECT setval(pg_get_serial_sequence('projects', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM projects),false)
 
 -- Contact
 CREATE TABLE IF NOT EXISTS public.contacts (
@@ -125,7 +125,7 @@ deleted_at                  TIMESTAMPTZ   NULL
 );
 CREATE INDEX index_companies_id ON companies (id);
 -- Run this after import of companies
--- SELECT setval(pg_get_serial_sequence('companies', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM contacts),false);
+-- SELECT setval(pg_get_serial_sequence('companies', 'id'),(SELECT COALESCE(MAX(id), 0) + 1 FROM companies),false);
 
 -- User
 CREATE TABLE IF NOT EXISTS public.users
