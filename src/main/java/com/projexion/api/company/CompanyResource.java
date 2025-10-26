@@ -17,6 +17,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
+
+import java.util.List;
 import java.util.Map;
 
 
@@ -92,5 +94,16 @@ public class CompanyResource {
     public Uni<Response> deleteEntry(@PathParam("key") Long key) {
         LOGGER.info("A company is deleted with id: " + key);
         return service.deleteCompany(key);
+    }
+
+    /**
+     * Implement search
+     * @param query
+     * @return
+     */
+    @GET
+    @Path("/search")
+    public Uni<List<CompanyEntity>> searchCompany(@QueryParam("q") String query) {
+        return service.searchCompany(query);
     }
 }

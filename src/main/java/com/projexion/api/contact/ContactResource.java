@@ -17,6 +17,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
+
+import java.util.List;
 import java.util.Map;
 
 
@@ -87,5 +89,16 @@ public class ContactResource {
     public Uni<Response> deleteEntry(@PathParam("key") Long key) {
         LOGGER.info("A contact is deleted with id: " + key);
         return service.deleteContact(key);
+    }
+
+    /**
+     * Implement search
+     * @param query
+     * @return
+     */
+    @GET
+    @Path("/search")
+    public Uni<List<ContactEntity>> searchContacts(@QueryParam("q") String query) {
+        return service.searchContacts(query);
     }
 }

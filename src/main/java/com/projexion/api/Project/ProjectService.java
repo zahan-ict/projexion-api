@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -152,5 +153,27 @@ public class ProjectService {
     public Uni<Response> deleteProject(Long id) {
         return Panache.withTransaction(() -> ProjectEntity.deleteById(id))
                 .map(deleted -> deleted ? Response.ok().status(NO_CONTENT).build() : Response.ok().status(NOT_FOUND).build());
+    }
+
+    /**
+     * Search project by partial name (case-insensitive)
+     * @param query
+     * @return
+     */
+    public Uni<List<ProjectEntity>> searchProjects(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            // Return empty list if query is blank
+            return Uni.createFrom().item(List.of());
+        }
+        String searchTerm = "%" + query.toLowerCase() + "%";
+
+        //  Search across multiple possible columns
+        String jpql = """
+                    FROM ProjectEntity c
+                    WHERE LOWER(c.title) LIKE ?1
+                       OR LOWER(c.productionYear) LIKE ?1
+                    ORDER BY c.title ASC
+                """;
+        return ProjectEntity.find(jpql, searchTerm).list();
     }
 }

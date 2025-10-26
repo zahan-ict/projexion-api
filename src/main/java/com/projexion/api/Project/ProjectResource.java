@@ -17,6 +17,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
+
+import java.util.List;
 import java.util.Map;
 
 
@@ -94,5 +96,11 @@ public class ProjectResource {
     public Uni<Response> deleteEntry(@PathParam("key") Long key) {
         LOGGER.info("A roject is deleted with id: " + key);
         return service.deleteProject(key);
+    }
+
+    @GET
+    @Path("/search")
+    public Uni<List<ProjectEntity>> searchProject(@QueryParam("q") String query) {
+        return service.searchProjects(query);
     }
 }

@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -128,5 +129,22 @@ public class CompanyService {
     public Uni<Response> deleteCompany(Long id) {
         return Panache.withTransaction(() -> CompanyEntity.deleteById(id))
                 .map(deleted -> deleted ? Response.ok().status(NO_CONTENT).build() : Response.ok().status(NOT_FOUND).build());
+    }
+
+    public Uni<List<CompanyEntity>> searchCompany(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            // Return empty list if query is blank
+            return Uni.createFrom().item(List.of());
+        }
+        String searchTerm = "%" + query.toLowerCase() + "%";
+        //  Search across multiple possible columns
+        String jpql = """
+                    FROM CompanyEntity c
+                    WHERE LOWER(c.companyName) LIKE ?1
+                       OR LOWER(c.companyMail) LIKE ?1
+                       OR LOWER(c.companyPhone) LIKE ?1
+                    ORDER BY c.companyName ASC
+                """;
+        return CompanyEntity.find(jpql, searchTerm).list();
     }
 }

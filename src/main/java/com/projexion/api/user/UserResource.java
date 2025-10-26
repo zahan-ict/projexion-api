@@ -2,6 +2,7 @@
  * Copyright (c) 2025 Nexinx. All rights reserved.
  */
 package com.projexion.api.user;
+import com.projexion.api.user.bean.UpdatePasswordBean;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -14,6 +15,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import io.smallrye.mutiny.Uni;
+
+import java.util.List;
 import java.util.Map;
 
 import jakarta.inject.Inject;
@@ -65,5 +68,17 @@ public class UserResource {
     @Path("{key}")
     public Uni<Response> deleteEntry(@PathParam("key") Long key) {
         return service.deleteUser(key);
+    }
+
+    @GET
+    @Path("/search")
+    public Uni<List<UserEntity>> searchUser(@QueryParam("q") String query) {
+        return service.searchUsers(query);
+    }
+
+    @PUT
+    @Path("/update-password")
+    public Uni<Response> updatePassword(UpdatePasswordBean request) {
+        return service.updatePassword(request);
     }
 }

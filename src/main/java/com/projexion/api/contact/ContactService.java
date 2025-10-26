@@ -2,6 +2,7 @@
  * Copyright (c) 2025 ProjeXion. All rights reserved.
  */
 package com.projexion.api.contact;
+
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
@@ -182,4 +184,26 @@ public class ContactService {
                 .map(deleted -> deleted ? Response.ok().status(NO_CONTENT).build() : Response.ok().status(NOT_FOUND).build());
     }
 
+    /**
+     * Search contact by partial name (case-insensitive)
+     * @param query
+     * @return
+     */
+    public Uni<List<ContactEntity>> searchContacts(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            // Return empty list if query is blank
+            return Uni.createFrom().item(List.of());
+        }
+        String searchTerm = "%" + query.toLowerCase() + "%";
+
+        //  Search across multiple possible columns
+        String jpql = """
+                    FROM ContactEntity c
+                    WHERE LOWER(c.name) LIKE ?1
+                       OR LOWER(c.firstName) LIKE ?1
+                       OR LOWER(c.email1) LIKE ?1
+                    ORDER BY c.name ASC
+                """;
+        return ContactEntity.find(jpql, searchTerm).list();
+    }
 }
