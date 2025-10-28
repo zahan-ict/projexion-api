@@ -69,7 +69,7 @@ public class AuthService {
                                 .value(refreshToken)
                                 .path("/")
                                 .maxAge(configService.getJwtRefreshTokenCookieExpire())
-                                .secure(true)      // only via HTTPS
+                                .secure(configService.isJwtRefreshTokeHttps())      // only via HTTPS
                                 .httpOnly(true)    // not accessible by JS
                                 .comment("Refresh Token")
                                 .build();
@@ -153,7 +153,7 @@ public class AuthService {
 //                .value("true")
 //                .path("/")
 //                .maxAge(300) // expires in 5 minutes
-//                .secure(true)
+//                .secure(configService.isJwtRefreshTokeHttps())
 //                .httpOnly(false) // must be accessible to JS
 //                .build();
 
