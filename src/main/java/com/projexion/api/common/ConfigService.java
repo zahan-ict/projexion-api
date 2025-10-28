@@ -31,4 +31,8 @@ public class ConfigService {
     @Getter
     @ConfigProperty(name = "jwt.refresh.token.cookie.expire")
     protected int jwtRefreshTokenCookieExpire;
+
+    @Getter
+    @ConfigProperty(name = "jwt.refresh.token.https")
+    protected boolean jwtRefreshTokeHttps;
 }

@@ -142,7 +142,7 @@ public class AuthService {
                 .value("")
                 .path("/")
                 .maxAge(0)
-                .secure(true)
+                .secure(configService.isJwtRefreshTokeHttps())
                 .httpOnly(true)
                 .comment("Expired")
                 .build();
