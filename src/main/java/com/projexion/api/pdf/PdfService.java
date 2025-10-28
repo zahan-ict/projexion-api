@@ -21,11 +21,11 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -236,12 +236,11 @@ public class PdfService {
      * FO template (XSL-FO) with placeholders
      */
     public String findTemplateByName() {
-        File file = new File("template/invoice.xsl");
-        if (!file.exists()) {
-            throw new RuntimeException("Template file not found: " + file.getAbsolutePath());
-        }
-        try {
-            return new String(Files.readAllBytes(Paths.get(file.getPath())));
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("META-INF/resources/template/invoice.xsl")) {
+            if (in == null) {
+                throw new RuntimeException("Template file not found in : META-INF/resources/template/invoice.xsl");
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException("Error reading template file", e);
         }
