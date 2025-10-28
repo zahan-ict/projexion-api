@@ -41,8 +41,8 @@ public class AuthService {
                 .firstResult()
                 .onItem().transformToUni(user -> {
                     if (user == null) {
-                        return Uni.createFrom().item(Response.status(Response.Status.UNAUTHORIZED)
-                                .entity(Map.of("error", "User not found")).build());
+                        return Uni.createFrom().item(
+                                Response.ok(Map.of("status", 403, "error", "User not found. Access will not grant")).build());
                     }
 
                     UserEntity userEntity = (UserEntity) user;
@@ -55,8 +55,9 @@ public class AuthService {
                         );
 
                         if (!valid) {
-                            return Uni.createFrom().item(Response.status(Response.Status.UNAUTHORIZED)
-                                    .entity(Map.of("error", "Invalid credentials")).build());
+                            // Return 200 OK, but with a body showing 403
+                            return Uni.createFrom().item(
+                                    Response.ok(Map.of("status", 403, "error", "Invalid credentials")).build());
                         }
 
                         // Generate JWTs
@@ -118,8 +119,8 @@ public class AuthService {
 
     public Uni<Response> refreshAccessToken(String refreshToken) {
         if (refreshToken == null || !isRefreshToken(refreshToken)) {
-            return Uni.createFrom().item(Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(Map.of("error", "Invalid or missing refresh token")).build());
+            return Uni.createFrom().item(
+                    Response.ok(Map.of("status", 403, "error", "Invalid or missing refresh token")).build());
         }
 
         try {
