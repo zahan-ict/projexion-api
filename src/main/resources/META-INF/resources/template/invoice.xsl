@@ -52,10 +52,28 @@
 
             <!-- Invoice Info -->
             <fo:block space-before="1.8cm">
-                <fo:inline>  ${invoiceIssueLocation}, ${invoiceIssueDate}</fo:inline>
-                <fo:leader leader-length="108mm"/>
-                <fo:inline  font-size="9pt">unser Zeichen:</fo:inline>
-                <fo:block text-align="right">${pdfCreator}</fo:block>
+                <fo:table width="100%" table-layout="fixed">
+                    <fo:table-column column-width="70mm"/>
+                    <fo:table-column column-width="40mm"/>
+                    <fo:table-body>
+                        <fo:table-row>
+                            <fo:table-cell>
+                                <fo:block>
+                                    <fo:inline>  ${invoiceIssueLocation}, ${invoiceIssueDate}</fo:inline>
+                                </fo:block>
+                            </fo:table-cell>
+                            <fo:table-cell text-align="right" display-align="center">
+                                <fo:block text-align="right">
+                                    <fo:external-graphic src="${qrCode}" width="10mm" height="10mm" content-height="scale-down-to-fit" content-width="scale-down-to-fit"/>
+                                </fo:block>
+                            </fo:table-cell>
+                        </fo:table-row>
+                    </fo:table-body>
+                </fo:table>
+                <fo:block space-before="0.5cm">
+                    <fo:inline  font-size="9pt">unser Zeichen:</fo:inline>
+                    <fo:block text-align="right">${pdfCreator}</fo:block>
+                </fo:block>
             </fo:block>
 
             <fo:block space-before="2cm" border-bottom="2px solid black" font-size="15pt">

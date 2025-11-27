@@ -4,6 +4,7 @@
 package com.projexion.api.pdf;
 
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -17,6 +18,7 @@ import org.jboss.logging.Logger;
 @Path("/pdf")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_OCTET_STREAM)
+@PermitAll
 public class PdfResource {
     private static final Logger LOGGER = Logger.getLogger(PdfResource.class.getName());
     @Inject
