@@ -1,0 +1,18 @@
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.21 as builder
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests -q
+
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.21
+ENV LANGUAGE='en_US:en'
+
+COPY --from=builder --chown=185 /app/target/lib/ /deployments/lib/
+COPY --from=builder --chown=185 /app/target/projexion-api-1.0.0-runner.jar /deployments/
+
+EXPOSE 8080 8081 5005
+USER 185
+ENV AB_JOLOKIA_OFF=""
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/projexion-api-1.0.0-runner.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
