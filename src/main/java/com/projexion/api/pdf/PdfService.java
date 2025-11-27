@@ -35,6 +35,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Base64;
+import java.util.regex.Matcher;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 @ApplicationScoped
 public class PdfService {
@@ -88,9 +98,33 @@ public class PdfService {
         String result = foTemplate;
         for (Map.Entry<String, Object> entry : data.entrySet()) {
             String key = "\\$\\{" + entry.getKey() + "\\}";
-            result = result.replaceAll(key, entry.getValue() != null ? entry.getValue().toString() : "");
+            String value = entry.getValue() != null ? entry.getValue().toString() : "";
+            result = result.replaceAll(key, Matcher.quoteReplacement(value));
         }
         return result;
+    }
+
+    /**
+     * Generates a QR code and saves it to a temporary file, returns file:// URL
+     */
+    private String generateQrCode(String data, int width, int height) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, width, height);
+            
+            Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+            Files.createDirectories(tempDir);
+            Path qrFile = Files.createTempFile(tempDir, "qr_", ".png");
+            
+            MatrixToImageWriter.writeToPath(bitMatrix, "PNG", qrFile);
+            
+            String fileUrl = qrFile.toUri().toString();
+            LOGGER.info("QR code generated at: " + fileUrl);
+            return fileUrl;
+        } catch (WriterException | IOException e) {
+            LOGGER.error("Error generating QR code: " + e.getMessage(), e);
+            return "";
+        }
     }
 
     /**
@@ -117,6 +151,11 @@ public class PdfService {
         map.put("invoiceTitle", dto.getInvoiceTitle());
         map.put("comment", dto.getComment());
         map.put("priceNote", dto.getPriceNote());
+
+        String qrCodeData = "Invoice: " + dto.getInvoiceNumber() + " | IBAN: CH50 0900 0000 9136 7960 5";
+        String qrCodeBase64 = generateQrCode(qrCodeData, 200, 200);
+        LOGGER.info("QR Code generated with length: " + qrCodeBase64.length());
+        map.put("qrCode", qrCodeBase64);
         //  map.put("bankName", dto.getBankName());
         // map.put("iban", dto.getIban());
        //  map.put("swift", dto.getSwift());
