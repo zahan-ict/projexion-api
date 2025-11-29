@@ -1,4 +1,4 @@
-<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:barcode="http://barcode4j.krysalis.org/ns">
     <fo:layout-master-set>
         <fo:simple-page-master master-name="A4"
                                page-height="29.7cm"
@@ -16,24 +16,26 @@
         <!-- FOOTER (appears on every page automatically) -->
         <fo:static-content flow-name="xsl-region-after">
             <fo:block font-size="8.2pt" text-align="left" margin-top="35pt">
-                <fo:inline>Bank: </fo:inline>
+                <fo:inline>Bank:</fo:inline>
                 <fo:inline font-weight="bold">${bankName}</fo:inline>
                 <fo:leader leader-pattern="space"/>
 
-                <fo:inline>IBAN: </fo:inline>
+                <fo:inline>IBAN:</fo:inline>
                 <fo:inline font-weight="bold">${iban}</fo:inline>
                 <fo:leader leader-pattern="space"/>
 
-                <fo:inline>SWIFT: </fo:inline>
+                <fo:inline>SWIFT:</fo:inline>
                 <fo:inline font-weight="bold">${swift}</fo:inline>
                 <fo:leader leader-pattern="space"/>
 
-                <fo:inline>Konto: </fo:inline>
+                <fo:inline>Konto:</fo:inline>
                 <fo:inline font-weight="bold">${accountNumber}</fo:inline>
                 <fo:block space-before="7pt" font-size="10pt" text-align="center">${companyAddress}</fo:block>
 
-                <fo:block space-before="2pt"  font-size="10pt" text-align="right">
-                    Seite <fo:page-number/> von
+                <fo:block space-before="2pt" font-size="10pt" text-align="right">
+                    Seite
+                    <fo:page-number/>
+                    von
                     <fo:page-number-citation-last ref-id="last-page"/>
                 </fo:block>
             </fo:block>
@@ -50,11 +52,24 @@
                 <fo:block>${clientPostCode} ${clientCity}</fo:block>
             </fo:block>
 
+            <!-- Right side: QR code -->
+            <fo:block-container absolute-position="absolute" margin-right="-10px" right="0">
+                <fo:block text-align="right">
+                    <fo:external-graphic
+                            src="${qrCode}"
+                            content-width="35mm"
+                            content-height="35mm"/>
+                </fo:block>
+            </fo:block-container>
+
+
             <!-- Invoice Info -->
             <fo:block space-before="1.8cm">
-                <fo:inline>  ${invoiceIssueLocation}, ${invoiceIssueDate}</fo:inline>
-                <fo:leader leader-length="108mm"/>
-                <fo:inline  font-size="9pt">unser Zeichen:</fo:inline>
+                <fo:block text-align-last="justify">
+                    <fo:inline>${invoiceIssueLocation}, ${invoiceIssueDate}</fo:inline>
+                    <fo:leader leader-pattern="space"/>
+                    <fo:inline font-size="9pt" text-align="right">unser Zeichen:</fo:inline>
+                </fo:block>
                 <fo:block text-align="right">${pdfCreator}</fo:block>
             </fo:block>
 
@@ -70,14 +85,15 @@
             <fo:block space-before="5pt" font-size="12pt">${comment}</fo:block>
 
             <!-- Prices (auto-flow, no cutoff) -->
-            <fo:block space-before="3cm" font-size="11pt" font-weight="bold" border-bottom="1pt solid black" text-align="right">
+            <fo:block space-before="3cm" font-size="11pt" font-weight="bold" border-bottom="1pt solid black"
+                      text-align="right">
                 Preis in EUR
             </fo:block>
             <!-- Loop over price items -->
             <!-- Dynamic Price Items inserted here -->
-             ${priceItems}
-             ${subtotal}
-            <fo:block space-before="1cm" font-size="12pt"> ${priceNote}</fo:block>
+            ${priceItems}
+            ${subtotal}
+            <fo:block space-before="1cm" font-size="12pt">${priceNote}</fo:block>
             <!-- mark the last page for page-number-citation -->
             <fo:block id="last-page"/>
         </fo:flow>

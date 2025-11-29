@@ -3,6 +3,10 @@
  */
 package com.projexion.api.pdf;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.fop.apps.FOUserAgent;
@@ -35,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Base64;
 
 @ApplicationScoped
 public class PdfService {
@@ -125,7 +130,7 @@ public class PdfService {
         map.put("accountNumber", "91-387960-5");
         map.put("swift", "POFICHBEXXXX");
         map.put("companyAddress", "Dschoint Ventschr Filmproduktion AG, Molkenstrasse 21, 8004 Zürich");
-
+        map.put("qrCode", generateQrBase64("CH50 0900 0000 9136 7960 5"));
 
         map.put("exchangeRate", dto.getExchangeRate());
         map.put("totalEur", dto.getTotalEur());
@@ -245,5 +250,21 @@ public class PdfService {
             throw new RuntimeException("Error reading template file", e);
         }
     }
+
+    public static String generateQrBase64(String text) {
+        try {
+            QRCodeWriter qrWriter = new QRCodeWriter();
+            BitMatrix matrix = qrWriter.encode(text, BarcodeFormat.QR_CODE, 300, 300);
+
+            ByteArrayOutputStream png = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(matrix, "PNG", png);
+
+            return "data:image/png;base64," + Base64.getEncoder().encodeToString(png.toByteArray());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
 
